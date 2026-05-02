@@ -1,0 +1,18 @@
+﻿# Configuración personal
+.env
+
+# Temporales de Python
+__pycache__/
+*.py[cod]
+logs_seguridad.csv
+*.wav
+temp_*
+
+# Entornos virtuales (ESTO ES LO MÁS IMPORTANTE)
+venv/
+.venv/
+env/
+bin/
+Include/
+Lib/
+Scripts/

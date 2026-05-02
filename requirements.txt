@@ -1,0 +1,12 @@
+streamlit
+openai
+python-dotenv
+pandas
+PyPDF2
+langchain-huggingface
+langchain-community
+faiss-cpu
+pytesseract
+pdf2image
+streamlit-mic-recorder
+sentence-transformers
