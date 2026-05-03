@@ -55,33 +55,31 @@ st.set_page_config(page_title="MEMIA - Seguridad Minera", page_icon="👷‍♂�
 # --- OCULTAR ELEMENTOS DE STREAMLIT ---
 hide_st_style = """
             <style>
-            /* 1. Ocultar menús y cabeceras estándar */
+            /* Ocultar menús, cabeceras y pie de página */
             #MainMenu {visibility: hidden; display: none !important;}
             header {visibility: hidden; display: none !important;}
             footer {visibility: hidden; display: none !important;}
-            .stAppDeployButton {display:none !important;}
             
-            /* 2. Ocultar el Badge de la corona y el avatar de usuario (Esquina inferior derecha) */
+            /* Ocultar botones de despliegue y edición */
+            .stAppDeployButton {display:none !important;}
+            button[title="View source on GitHub"] {display: none !important;}
+            button[title="Edit this app"] {display: none !important;}
+
+            /* BLOQUE CRÍTICO: Ocultar Badge de la corona y Avatar (Esquina inferior derecha) */
             [data-testid="stStatusWidget"] {display: none !important; visibility: hidden !important;}
+            [data-testid="stStatusWidgetBadge"] {display: none !important;}
             .st-emotion-cache-zq5wmm {display: none !important;}
             .st-emotion-cache-10as9as {display: none !important;}
-            
-            /* 3. Atacar el contenedor flotante de la esquina inferior derecha */
-            div[data-testid="stStatusWidget"] + div {display: none !important;}
             #viewerBadge {display: none !important;}
-            
-            /* 4. Eliminar cualquier barra de herramientas o decoración */
+
+            /* Eliminar el contenedor flotante que aloja los iconos */
+            div.stActionButton {display: none !important;}
             div[data-testid="stToolbar"] {display: none !important;}
             
-            /* 5. Forzar que el contenido ocupe todo el espacio y no deje ver el fondo */
+            /* Ajuste de contenedor para que no deje espacio para los iconos ocultos */
             .main .block-container {
                 padding-bottom: 0rem !important;
-            }
-            
-            /* 6. Selector universal para botones de sistema de Streamlit */
-            button[title="View source on GitHub"], 
-            button[title="Edit this app"] {
-                display: none !important;
+                max-width: 100% !important;
             }
             </style>
             """
