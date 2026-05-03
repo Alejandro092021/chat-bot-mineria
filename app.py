@@ -55,33 +55,25 @@ st.set_page_config(page_title="MEMIA - Seguridad Minera", page_icon="👷‍♂�
 # --- OCULTAR ELEMENTOS DE STREAMLIT ---
 hide_st_style = """
             <style>
-            /* Ocultar menús, cabeceras y pie de página */
+            /* 1. Ocultar el menú superior y footer (Esto ya está comprobado que funciona) */
             #MainMenu {visibility: hidden; display: none !important;}
             header {visibility: hidden; display: none !important;}
             footer {visibility: hidden; display: none !important;}
-            
-            /* Ocultar botones de despliegue y edición */
-            .stAppDeployButton {display:none !important;}
-            button[title="View source on GitHub"] {display: none !important;}
-            button[title="Edit this app"] {display: none !important;}
 
-            /* BLOQUE CRÍTICO: Ocultar Badge de la corona y Avatar (Esquina inferior derecha) */
-            [data-testid="stStatusWidget"] {display: none !important; visibility: hidden !important;}
-            [data-testid="stStatusWidgetBadge"] {display: none !important;}
-            .st-emotion-cache-zq5wmm {display: none !important;}
-            .st-emotion-cache-10as9as {display: none !important;}
-            #viewerBadge {display: none !important;}
-
-            /* Eliminar el contenedor flotante que aloja los iconos */
-            div.stActionButton {display: none !important;}
-            div[data-testid="stToolbar"] {display: none !important;}
-            
-            /* Ajuste de contenedor para que no deje espacio para los iconos ocultos */
-            .main .block-container {
-                padding-bottom: 0rem !important;
-                max-width: 100% !important;
+            /* 2. BLOQUEAR CLICS en los botones inferiores derechos */
+            [data-testid="stStatusWidget"],
+            #viewerBadge,
+            .st-emotion-cache-zq5wmm,
+            .st-emotion-cache-10as9as,
+            div[data-testid="stToolbar"] {
+                pointer-events: none !important; /* Desactiva el clic */
+                cursor: default !important; /* Quita el cursor de la "manito" al pasar el mouse */
+                opacity: 0.6 !important; /* Los hace un poco transparentes para que resalten menos */
             }
             </style>
+            
+            <!-- 3. ESCUDO INVISIBLE: Un cuadro transparente que bloquea físicamente esa esquina -->
+            <div style="position: fixed; bottom: 0; right: 0; width: 120px; height: 120px; background-color: transparent; z-index: 999999; cursor: default;"></div>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
