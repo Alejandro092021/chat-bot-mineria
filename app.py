@@ -51,6 +51,18 @@ client = OpenAI(
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 st.set_page_config(page_title="MEMIA - Seguridad Minera", page_icon="👷‍♂️")
+
+# --- OCULTAR ELEMENTOS DE STREAMLIT ---
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            header {visibility: hidden;}
+            footer {visibility: hidden;}
+            .stAppDeployButton {display:none;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 st.title("Asistente de Seguridad (MEMIA) 🤖")
 
 if "autenticado" not in st.session_state:
