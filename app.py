@@ -77,26 +77,29 @@ hide_st_style = """
             """
 st.markdown("""
     <style>
-    /* Ocultar lo básico */
+    /* Ocultar lo básico que sí permite la nube */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
-    footer {display: none !important;}
 
-    /* CREAR LA FRANJA BLOQUEADORA */
-    .parche-seguridad {
-        position: fixed;
-        bottom: 0;
-        right: 0;
-        width: 200px; /* Ancho suficiente para cubrir ambos iconos */
-        height: 50px;  /* Altura para tapar los botones */
-        background-color: #0e1117; /* COLOR DE FONDO ESTÁNDAR DE STREAMLIT DARK */
-        z-index: 999999999; /* Prioridad máxima absoluta */
-        pointer-events: all; /* Atrapa los clics */
+    /* LA FRANJA BLOQUEADORA DEFINITIVA */
+    .parche-maestro {
+        position: fixed !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        width: 180px !important; /* Cubre los dos iconos */
+        height: 60px !important;  /* Altura suficiente */
+        background-color: #0e1117 !important; /* Color oscuro Streamlit */
+        
+        /* El truco: Z-INDEX al máximo posible y posicionamiento fijo */
+        z-index: 2147483647 !important; 
+        
+        /* Bloquea interacción física */
+        pointer-events: all !important;
+        display: block !important;
     }
-    
-    /* Si usas el tema claro, cambia el color de arriba a #ffffff */
     </style>
-    <div class="parche-seguridad"></div>
+    
+    <div class="parche-maestro"></div>
     """,
     unsafe_allow_html=True)
 
