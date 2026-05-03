@@ -123,7 +123,7 @@ def procesar_a_vectores(pdf_docs):
     if not texto_completo.strip():
         return None
     
-    # MEJORA: Chunks más pequeños (700) para mayor precisión en la respuesta
+    # MEJORA: Chunks más pequeños (700) para mayor precisión en la respuesta 1
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=100)
     chunks = text_splitter.split_text(texto_completo)
     
