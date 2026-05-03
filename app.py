@@ -59,6 +59,14 @@ hide_st_style = """
             header {visibility: hidden;}
             footer {visibility: hidden;}
             .stAppDeployButton {display:none;}
+            
+            /* Ocultar la corona de Streamlit y el perfil (esquina inferior derecha) */
+            div[data-testid="stStatusWidget"] {display: none;}
+            #viewerBadge {display: none;}
+            .stApp [data-testid="stToolbar"] {display: none;}
+            
+            /* Bloque extra para asegurar que no quede rastro del footer */
+            footer {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
