@@ -75,7 +75,27 @@ hide_st_style = """
             <!-- 3. ESCUDO INVISIBLE: Un cuadro transparente que bloquea físicamente esa esquina -->
             <div style="position: fixed; bottom: 0; right: 0; width: 120px; height: 120px; background-color: transparent; z-index: 999999; cursor: default;"></div>
             """
-st.markdown(hide_st_style, unsafe_allow_html=True)
+st.markdown("""
+    <style>
+    /* Ocultamos lo que la nube nos permite (Menú y Header) */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Creamos una capa invisible sobre la esquina inferior derecha */
+    .bloqueador-seguridad {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 150px; /* Cubre el área de los iconos */
+        height: 70px;
+        background-color: rgba(255, 255, 255, 0.01); /* Casi invisible */
+        z-index: 9999999; /* Por encima de todo */
+        cursor: default;
+    }
+    </style>
+    <div class="bloqueador-seguridad"></div>
+    """,
+    unsafe_allow_html=True)
 
 st.title("Asistente de Seguridad (MEMIA) 🤖")
 
