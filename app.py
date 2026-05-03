@@ -77,23 +77,26 @@ hide_st_style = """
             """
 st.markdown("""
     <style>
-    /* Ocultamos lo que la nube nos permite (Menú y Header) */
+    /* Ocultar lo básico */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
-    
-    /* Creamos una capa invisible sobre la esquina inferior derecha */
-    .bloqueador-seguridad {
+    footer {display: none !important;}
+
+    /* CREAR LA FRANJA BLOQUEADORA */
+    .parche-seguridad {
         position: fixed;
         bottom: 0;
         right: 0;
-        width: 150px; /* Cubre el área de los iconos */
-        height: 70px;
-        background-color: rgba(255, 255, 255, 0.01); /* Casi invisible */
-        z-index: 9999999; /* Por encima de todo */
-        cursor: default;
+        width: 200px; /* Ancho suficiente para cubrir ambos iconos */
+        height: 50px;  /* Altura para tapar los botones */
+        background-color: #0e1117; /* COLOR DE FONDO ESTÁNDAR DE STREAMLIT DARK */
+        z-index: 999999999; /* Prioridad máxima absoluta */
+        pointer-events: all; /* Atrapa los clics */
     }
+    
+    /* Si usas el tema claro, cambia el color de arriba a #ffffff */
     </style>
-    <div class="bloqueador-seguridad"></div>
+    <div class="parche-seguridad"></div>
     """,
     unsafe_allow_html=True)
 
