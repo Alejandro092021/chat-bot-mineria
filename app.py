@@ -55,25 +55,33 @@ st.set_page_config(page_title="MEMIA - Seguridad Minera", page_icon="👷‍♂�
 # --- OCULTAR ELEMENTOS DE STREAMLIT ---
 hide_st_style = """
             <style>
-            #MainMenu {visibility: hidden;}
-            header {visibility: hidden;}
-            footer {visibility: hidden;}
-            .stAppDeployButton {display:none;}
+            /* 1. Ocultar menús y cabeceras estándar */
+            #MainMenu {visibility: hidden; display: none !important;}
+            header {visibility: hidden; display: none !important;}
+            footer {visibility: hidden; display: none !important;}
+            .stAppDeployButton {display:none !important;}
             
-            /* Oculta el contenedor de la corona y el perfil de usuario */
-            [data-testid="stStatusWidget"] {display: none !important;}
-            
-            /* Oculta el botón de 'Manage App' y decoraciones de la esquina */
+            /* 2. Ocultar el Badge de la corona y el avatar de usuario (Esquina inferior derecha) */
+            [data-testid="stStatusWidget"] {display: none !important; visibility: hidden !important;}
             .st-emotion-cache-zq5wmm {display: none !important;}
             .st-emotion-cache-10as9as {display: none !important;}
             
-            /* Bloqueo total de cualquier barra de herramientas superior o inferior */
-            div[data-testid="stToolbar"] {display: none !important;}
-            footer {display: none !important;}
+            /* 3. Atacar el contenedor flotante de la esquina inferior derecha */
+            div[data-testid="stStatusWidget"] + div {display: none !important;}
+            #viewerBadge {display: none !important;}
             
-            /* Elimina el espacio extra al final de la página */
+            /* 4. Eliminar cualquier barra de herramientas o decoración */
+            div[data-testid="stToolbar"] {display: none !important;}
+            
+            /* 5. Forzar que el contenido ocupe todo el espacio y no deje ver el fondo */
             .main .block-container {
-                padding-bottom: 0rem;
+                padding-bottom: 0rem !important;
+            }
+            
+            /* 6. Selector universal para botones de sistema de Streamlit */
+            button[title="View source on GitHub"], 
+            button[title="Edit this app"] {
+                display: none !important;
             }
             </style>
             """
