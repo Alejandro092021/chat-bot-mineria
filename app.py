@@ -60,13 +60,21 @@ hide_st_style = """
             footer {visibility: hidden;}
             .stAppDeployButton {display:none;}
             
-            /* Ocultar la corona de Streamlit y el perfil (esquina inferior derecha) */
-            div[data-testid="stStatusWidget"] {display: none;}
-            #viewerBadge {display: none;}
-            .stApp [data-testid="stToolbar"] {display: none;}
+            /* Oculta el contenedor de la corona y el perfil de usuario */
+            [data-testid="stStatusWidget"] {display: none !important;}
             
-            /* Bloque extra para asegurar que no quede rastro del footer */
+            /* Oculta el botón de 'Manage App' y decoraciones de la esquina */
+            .st-emotion-cache-zq5wmm {display: none !important;}
+            .st-emotion-cache-10as9as {display: none !important;}
+            
+            /* Bloqueo total de cualquier barra de herramientas superior o inferior */
+            div[data-testid="stToolbar"] {display: none !important;}
             footer {display: none !important;}
+            
+            /* Elimina el espacio extra al final de la página */
+            .main .block-container {
+                padding-bottom: 0rem;
+            }
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
