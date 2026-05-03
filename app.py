@@ -6,6 +6,7 @@ import io
 import pandas as pd
 from datetime import datetime
 from PyPDF2 import PdfReader
+import platform  # NUEVA MEJORA: Para detectar Windows vs Nube
 
 # --- IMPORTACIONES PARA RAG Y OCR ---
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -15,28 +16,35 @@ import pytesseract
 from pdf2image import convert_from_bytes
 from streamlit_mic_recorder import mic_recorder
 
-# --- 0. CONFIGURACIÓN DE RUTAS EXTERNAS ---
-# Asegúrate de que estas rutas coincidan con la instalación en tu PC
-ffmpeg_path = r'C:\FFmpeg\ffmpeg-8.1-essentials_build\bin'
-poppler_path = r'C:\poppler\poppler-25.12.0\Library\bin' 
-tesseract_dir = r'C:\Program Files\Tesseract-OCR'
-tesseract_exe = os.path.join(tesseract_dir, 'tesseract.exe')
+# --- 0. CONFIGURACIÓN DE RUTAS MULTIPLATAFORMA (MEJORA) ---
+if platform.system() == "Windows":
+    # Rutas locales (Alejandro)
+    ffmpeg_path = r'C:\FFmpeg\ffmpeg-8.1-essentials_build\bin'
+    poppler_path = r'C:\poppler\poppler-25.12.0\Library\bin' 
+    tesseract_dir = r'C:\Program Files\Tesseract-OCR'
+    tesseract_exe = os.path.join(tesseract_dir, 'tesseract.exe')
 
-# Configuración de variables de entorno críticas
-os.environ['TESSDATA_PREFIX'] = os.path.join(tesseract_dir, 'tessdata')
-import pytesseract
-pytesseract.pytesseract.tesseract_cmd = tesseract_exe
+    os.environ['TESSDATA_PREFIX'] = os.path.join(tesseract_dir, 'tessdata')
+    pytesseract.pytesseract.tesseract_cmd = tesseract_exe
 
-# Inyección al PATH del sistema
-for path in [ffmpeg_path, poppler_path, tesseract_dir]:
-    if path not in os.environ["PATH"]:
-        os.environ["PATH"] = path + os.pathsep + os.environ["PATH"]
+    for path in [ffmpeg_path, poppler_path, tesseract_dir]:
+        if os.path.exists(path) and path not in os.environ["PATH"]:
+            os.environ["PATH"] = path + os.pathsep + os.environ["PATH"]
+else:
+    # Configuración para Producción (Linux/Streamlit Cloud)
+    # Los paquetes se instalan vía packages.txt automáticamente
+    pytesseract.pytesseract.tesseract_cmd = 'tesseract'
+    poppler_path = None # En Linux se usa el comando global
 
 # 1. CONFIGURACIÓN DE APIS E INICIALIZACIÓN
 load_dotenv()
+
+# MEJORA: Soporte para Secrets de Streamlit Cloud si no hay .env
+api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
+
 client = OpenAI(
     base_url="https://api.groq.com/openai/v1",
-    api_key=os.getenv("GROQ_API_KEY")
+    api_key=api_key
 )
 
 # Motor de búsqueda semántica
@@ -57,19 +65,20 @@ def procesar_a_vectores(pdf_docs):
         pdf_reader = PdfReader(io.BytesIO(pdf_bytes))
         
         for page_num, page in enumerate(pdf_reader.pages):
-            # Intento A: Extraer texto digital
             texto_extraido = page.extract_text()
             
-            if texto_extraido and len(texto_extraido.strip()) > 50:
+            # MEJORA: Umbral de texto más estricto para forzar OCR si el texto es basura
+            if texto_extraido and len(texto_extraido.strip()) > 100:
                 texto_completo += texto_extraido + "\n"
             else:
-                # Intento B: OCR si la página es una imagen
                 try:
+                    # Ajuste de ruta de poppler según plataforma
+                    p_path = os.path.abspath(poppler_path) if poppler_path else None
                     images = convert_from_bytes(
                         pdf_bytes, 
                         first_page=page_num+1, 
                         last_page=page_num+1,
-                        poppler_path=os.path.abspath(poppler_path)
+                        poppler_path=p_path
                     )
                     for img in images:
                         texto_ocr = pytesseract.image_to_string(img, lang='spa')
@@ -80,7 +89,8 @@ def procesar_a_vectores(pdf_docs):
     if not texto_completo.strip():
         return None
     
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    # MEJORA: Chunks más pequeños (700) para mayor precisión en la respuesta
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=100)
     chunks = text_splitter.split_text(texto_completo)
     
     return FAISS.from_texts(chunks, embeddings) if chunks else None
@@ -125,7 +135,6 @@ with st.sidebar:
         else:
             st.success("Sesión de Administrador Activa")
             
-            # SECCIÓN DE REPORTES (RESTAURADA)
             st.subheader("📊 Historial de Riesgos")
             if os.path.exists("logs_seguridad.csv"):
                 try:
@@ -144,7 +153,6 @@ with st.sidebar:
             else:
                 st.info("No hay logs registrados.")
 
-            # CARGA DE ARCHIVOS
             st.subheader("Carga de Normativas (RAG + OCR)")
             uploaded_files = st.file_uploader("Sube manuales o fotos (PDF)", type="pdf", accept_multiple_files=True)
             if uploaded_files:
@@ -164,13 +172,15 @@ with st.sidebar:
     st.subheader("🎙️ Consulta por Voz")
     audio_input = mic_recorder(start_prompt="Grabar pregunta", stop_prompt="Detener", key='recorder')
 
-    if st.button("🗑️ Limpiar historial de chat"):
+    # MEJORA: Botón de Reinicio Total (Limpia Chat e Índice de documentos)
+    if st.button("🔥 Reinicio Total (Empezar de cero)"):
         if "messages" in st.session_state:
             del st.session_state["messages"]
+        if "vector_db" in st.session_state:
+            del st.session_state["vector_db"]
         st.rerun()
 
 # --- 5. LÓGICA DEL CHAT ---
-# Inicialización con tus REGLAS DE COMPORTAMIENTO esenciales
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", 
                                   "content": """Eres MEMIA, un Chatbot de Seguridad experto en minería. 
@@ -180,10 +190,9 @@ if "messages" not in st.session_state:
             1. Tu base de conocimientos PRINCIPAL son los documentos indexados.
             2. Si la respuesta está en el documento, extráela de forma CONCISA. No resumas todo el documento, solo responde lo que se te preguntó.
             3. Si la información NO está en el documento, utiliza tu conocimiento general de seguridad minera para responder, pero advierte: 'Información general (no presente en manuales)'.
-            4. Transforma datos técnicos complejos en respuestas instantáneas y accionables.
-            5. Prioriza la seguridad: si algo es peligroso, adviértelo con claridad.
-            6. Responde de forma concisa (estás hablando con alguien en el punto de trabajo).
-            7. Si te preguntan algo fuera de seguridad minera, amablemente redirige la conversación al tema de prevención de riesgos."""}]
+            4. Prioriza la seguridad: si algo es peligroso, adviértelo con claridad.
+            5. Responde de forma concisa (estás hablando con alguien en el punto de trabajo).
+            6. Si te preguntan algo fuera de seguridad minera, amablemente redirige la conversación al tema de prevención de riesgos."""}]
 
 for msg in st.session_state.messages:
     if msg["role"] != "system":
@@ -204,15 +213,22 @@ if prompt:
 
     contexto = ""
     if "vector_db" in st.session_state:
-        docs = st.session_state.vector_db.similarity_search(prompt, k=3)
+        # MEJORA: k=2 para evitar que la IA reciba demasiada información irrelevante
+        docs = st.session_state.vector_db.similarity_search(prompt, k=2)
         contexto = "\n".join([d.page_content for d in docs])
 
     try:
         mensajes_ia = st.session_state.messages.copy()
         if contexto:
-            mensajes_ia.append({"role": "system", "content": f"Contexto técnico detectado: {contexto}"})
+            mensajes_ia.append({"role": "system", "content": f"Contexto técnico extraído del manual (USA ESTO PARA RESPONDER): {contexto}"})
 
-        stream = client.chat.completions.create(model="llama-3.3-70b-versatile", messages=mensajes_ia, stream=True)
+        # MEJORA: Temperatura baja (0.1) para evitar alucinaciones en seguridad
+        stream = client.chat.completions.create(
+            model="llama-3.3-70b-versatile", 
+            messages=mensajes_ia, 
+            stream=True,
+            temperature=0.1
+        )
         with st.chat_message("assistant"):
             msg_ai = st.write_stream(stream)
         st.session_state.messages.append({"role": "assistant", "content": msg_ai})
