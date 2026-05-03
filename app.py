@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime
 from PyPDF2 import PdfReader
 import platform  # NUEVA MEJORA: Para detectar Windows vs Nube
+import streamlit.components.v1 as components
 
 # --- IMPORTACIONES PARA RAG Y OCR ---
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -53,55 +54,44 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 st.set_page_config(page_title="MEMIA - Seguridad Minera", page_icon="👷‍♂️")
 
 # --- OCULTAR ELEMENTOS DE STREAMLIT ---
-hide_st_style = """
-            <style>
-            /* 1. Ocultar el menú superior y footer (Esto ya está comprobado que funciona) */
-            #MainMenu {visibility: hidden; display: none !important;}
-            header {visibility: hidden; display: none !important;}
-            footer {visibility: hidden; display: none !important;}
 
-            /* 2. BLOQUEAR CLICS en los botones inferiores derechos */
-            [data-testid="stStatusWidget"],
-            #viewerBadge,
-            .st-emotion-cache-zq5wmm,
-            .st-emotion-cache-10as9as,
-            div[data-testid="stToolbar"] {
-                pointer-events: none !important; /* Desactiva el clic */
-                cursor: default !important; /* Quita el cursor de la "manito" al pasar el mouse */
-                opacity: 0.6 !important; /* Los hace un poco transparentes para que resalten menos */
-            }
-            </style>
-            
-            <!-- 3. ESCUDO INVISIBLE: Un cuadro transparente que bloquea físicamente esa esquina -->
-            <div style="position: fixed; bottom: 0; right: 0; width: 120px; height: 120px; background-color: transparent; z-index: 999999; cursor: default;"></div>
-            """
-st.markdown("""
-    <style>
-    /* Ocultar lo básico que sí permite la nube */
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
 
-    /* LA FRANJA BLOQUEADORA DEFINITIVA */
-    .parche-maestro {
-        position: fixed !important;
-        bottom: 0 !important;
-        right: 0 !important;
-        width: 180px !important; /* Cubre los dos iconos */
-        height: 60px !important;  /* Altura suficiente */
-        background-color: #0e1117 !important; /* Color oscuro Streamlit */
-        
-        /* El truco: Z-INDEX al máximo posible y posicionamiento fijo */
-        z-index: 2147483647 !important; 
-        
-        /* Bloquea interacción física */
-        pointer-events: all !important;
-        display: block !important;
-    }
-    </style>
+# 1. Inyección de Parche en la capa superior (DOM Padre)
+# Este script sale de tu app y pega la franja en el navegador principal
+components.html(
+    """
+    <script>
+    const patch = window.parent.document.createElement('div');
+    patch.id = 'blocker-final';
+    patch.style.position = 'fixed';
+    patch.style.bottom = '0';
+    patch.style.right = '0';
+    patch.style.width = '220px'; /* Un poco más ancho para asegurar */
+    patch.style.height = '70px';
+    patch.style.backgroundColor = '#0e1117'; /* Color oscuro de Streamlit */
+    patch.style.zIndex = '2147483647'; /* El máximo valor posible */
+    patch.style.pointerEvents = 'all';
+    patch.style.display = 'block';
     
-    <div class="parche-maestro"></div>
+    // Lo insertamos en el cuerpo principal del navegador
+    window.parent.document.body.appendChild(patch);
+    </script>
     """,
-    unsafe_allow_html=True)
+    height=0,
+)
+
+# 2. CSS para limpiar el resto de la interfaz interna
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden; display: none !important;}
+    header {visibility: hidden; display: none !important;}
+    footer {visibility: hidden; display: none !important;}
+    .stAppDeployButton {display:none !important;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 st.title("Asistente de Seguridad (MEMIA) 🤖")
 
